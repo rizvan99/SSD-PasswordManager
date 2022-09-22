@@ -16,5 +16,7 @@ namespace PasswordManager.Core.Interfaces
         public List<Manager> GetAll();
 
         public string GenerateStrongPassword();
+        public string EncryptData(int userId);
+        public string DecryptData(int userId);
     }
 }

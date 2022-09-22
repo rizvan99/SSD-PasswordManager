@@ -1,4 +1,5 @@
 ﻿using PasswordManager.Core.Interfaces;
+using PasswordManager.Core.Utils;
 using PasswordManager.Entities.Domain;
 using PasswordManager.Infrastructure.Interfaces;
 using System;
@@ -24,6 +25,16 @@ namespace PasswordManager.Core.Implementation
             throw new NotImplementedException();
         }
 
+        public string DecryptData(int userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string EncryptData(int userId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Manager Delete(int id)
         {
             throw new NotImplementedException();
@@ -31,7 +42,16 @@ namespace PasswordManager.Core.Implementation
 
         public string GenerateStrongPassword()
         {
-            throw new NotImplementedException();
+            var gen = new PasswordGenerator()
+            {
+                Length = 12,
+                MinDigits = 3,
+                MinUppercases = 1,
+                MinLowercases = 1,
+                MinSpecials = 1,
+            };
+
+            return gen.Generate();
         }
 
         public Manager Get(int id)
