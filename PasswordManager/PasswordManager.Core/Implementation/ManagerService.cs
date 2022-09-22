@@ -20,6 +20,7 @@ namespace PasswordManager.Core.Implementation
             _managerRepo = managerRepo;
         }
 
+        // Todo: encrypt before sending to repo
         public Manager Create(Manager entity)
         {
             throw new NotImplementedException();
@@ -54,11 +55,13 @@ namespace PasswordManager.Core.Implementation
             return gen.Generate();
         }
 
+        // Todo: decrypt before returning
         public Manager Get(int id)
         {
             throw new NotImplementedException();
         }
 
+        // Todo: decrypt before returning
         public List<Manager> GetAll()
         {
             throw new NotImplementedException();
