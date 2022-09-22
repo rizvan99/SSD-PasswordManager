@@ -8,7 +8,9 @@ namespace PasswordManager.Entities.DTO
 {
     public class ManagerDTO
     {
+        /// <summary>
+        /// Name of the domain, service etc.
+        /// </summary>
         public string Service { get; set; }
-        public string Password { get; set; }
     }
 }

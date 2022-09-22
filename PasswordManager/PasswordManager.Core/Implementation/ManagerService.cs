@@ -29,6 +29,11 @@ namespace PasswordManager.Core.Implementation
             throw new NotImplementedException();
         }
 
+        public string GenerateStrongPassword()
+        {
+            throw new NotImplementedException();
+        }
+
         public Manager Get(int id)
         {
             throw new NotImplementedException();

@@ -14,5 +14,7 @@ namespace PasswordManager.Core.Interfaces
         public Manager Delete(int id);
         public Manager Get(int id);
         public List<Manager> GetAll();
+
+        public string GenerateStrongPassword();
     }
 }

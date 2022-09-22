@@ -37,7 +37,7 @@ namespace PasswordManager.API.Controllers
                 {
                     UserId = int.Parse(userId),
                     Service = dto.Service,
-                    Password = dto.Password
+                    Password = "", // generated at service
                 };
 
                 // Todo: send to service to encrypt -> send to repo to save to database
