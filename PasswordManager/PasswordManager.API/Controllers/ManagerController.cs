@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PasswordManager.Core.Interfaces;
+using PasswordManager.Core.Utils;
 using PasswordManager.Entities.Domain;
 using PasswordManager.Entities.DTO;
 using System;
@@ -32,12 +33,20 @@ namespace PasswordManager.API.Controllers
                 {
                     return Unauthorized();
                 }
+                var gen = new PasswordGenerator()
+                {
+                    Length = 12,
+                    MinDigits = 3,
+                    MinUppercases = 1,
+                    MinLowercases = 1,
+                    MinSpecials = 1,
+                };
 
                 var newManager = new Manager()
                 {
                     UserId = int.Parse(userId),
                     Service = dto.Service,
-                    Password = "", // generated at service
+                    Password = gen.Generate(), // handle at service?
                 };
 
                 // Todo: send to service to encrypt -> send to repo to save to database
