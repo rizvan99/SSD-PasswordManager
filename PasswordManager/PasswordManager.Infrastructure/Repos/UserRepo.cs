@@ -31,7 +31,7 @@ namespace PasswordManager.Infrastructure.Repos
 
         public User Get(int id)
         {
-            throw new NotImplementedException();
+            return _ctx.Users.FirstOrDefault(x => x.Id == id);
         }
 
         public List<User> GetAll()

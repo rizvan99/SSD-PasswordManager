@@ -53,7 +53,7 @@ namespace PasswordManager.Core.Implementation
 
         public User Get(int id)
         {
-            throw new NotImplementedException();
+            return _userRepo.Get(id);
         }
 
         public List<User> GetAll()

@@ -33,19 +33,18 @@ namespace PasswordManager.Core.Implementation
             return rsa.ToXmlString(true);
         }
 
-        public string GetEncryptionKey(int userId)
+        public string GetEncryptionKeyString(int userId)
         {
             var user = _userService.Get(userId);
-            var salt = System.Text.Encoding.UTF8.GetString(user.PasswordSalt);
-            var date = user.DateTimeCreated;
+            var date = user.DateTimeCreated.ToString();
             var secret = _secretKey;
-            return salt + date + secret;
+            return secret + date;
         }
 
         // Todo: encrypt before sending to repo
         public Manager Create(Manager entity)
         {
-            var key = GetEncryptionKey(entity.UserId);
+            var key = GetEncryptionKeyString(entity.UserId);
             var managerToCreate = new Manager()
             {
                 Password = Encrypt(entity.Password, key),
