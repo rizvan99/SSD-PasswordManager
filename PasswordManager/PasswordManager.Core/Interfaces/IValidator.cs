@@ -8,6 +8,6 @@ namespace PasswordManager.Core.Interfaces
 {
     public interface IValidator<T>
     {
-        public void ValidteEntity(T entity);
+        public void ValidateEntity(T entity);
     }
 }

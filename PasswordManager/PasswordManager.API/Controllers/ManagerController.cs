@@ -49,9 +49,9 @@ namespace PasswordManager.API.Controllers
                     Password = gen.Generate(), // handle at service?
                 };
 
-                // Todo: send to service to encrypt -> send to repo to save to database
+                var res = _managerService.Create(newManager);
 
-                return Ok("you have access");
+                return Ok(res);
             }
             catch(Exception e)
             {

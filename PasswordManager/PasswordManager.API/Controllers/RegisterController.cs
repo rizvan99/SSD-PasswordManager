@@ -43,6 +43,10 @@ namespace PasswordManager.API.Controllers
                     token = _loginService.GenerateToken(user)
                 });
             }
+            catch(ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch(ArgumentException ex)
             {
                 return BadRequest(ex.Message);

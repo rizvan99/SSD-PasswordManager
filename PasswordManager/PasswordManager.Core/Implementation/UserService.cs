@@ -23,7 +23,7 @@ namespace PasswordManager.Core.Implementation
             // Validation => Secure Architecture principles
             // Catch exceptions in controller
 
-            // ValidateEntity(entity);
+            ValidateEntity(entity);
 
             var newUser = _userRepo.Create(entity);
             return newUser;
@@ -33,7 +33,7 @@ namespace PasswordManager.Core.Implementation
         /// Validate user entity properties
         /// </summary>
         /// <param name="entity"></param>
-        public void ValidteEntity(User entity)
+        public void ValidateEntity(User entity)
         {
             if (string.IsNullOrEmpty(entity.Username))
             {

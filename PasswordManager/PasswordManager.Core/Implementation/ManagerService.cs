@@ -4,7 +4,10 @@ using PasswordManager.Entities.Domain;
 using PasswordManager.Infrastructure.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,26 +17,85 @@ namespace PasswordManager.Core.Implementation
     {
 
         private readonly IManagerRepo _managerRepo;
+        private readonly IUserService _userService;
+        private readonly string _secretKey;
 
-        public ManagerService(IManagerRepo managerRepo)
+        public ManagerService(IManagerRepo managerRepo, IUserService userService)
         {
             _managerRepo = managerRepo;
+            _userService = userService;
+            _secretKey = CreateTempServerSideKey();
+        }
+
+        private string CreateTempServerSideKey()
+        {
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            return rsa.ToXmlString(true);
+        }
+
+        public string GetEncryptionKey(int userId)
+        {
+            var user = _userService.Get(userId);
+            var salt = System.Text.Encoding.UTF8.GetString(user.PasswordSalt);
+            var date = user.DateTimeCreated;
+            var secret = _secretKey;
+            return salt + date + secret;
         }
 
         // Todo: encrypt before sending to repo
         public Manager Create(Manager entity)
         {
-            throw new NotImplementedException();
+            var key = GetEncryptionKey(entity.UserId);
+            var managerToCreate = new Manager()
+            {
+                Password = Encrypt(entity.Password, key),
+                Service = Encrypt(entity.Service, key),
+                UserId = entity.UserId,
+            };
+            return _managerRepo.Create(managerToCreate);
         }
 
-        public string DecryptData(int userId)
+        public static string Decrypt(string cipherText, string key) // Key = User Password Salt + User DateTimeCreated + Secret Key
         {
-            throw new NotImplementedException();
+            cipherText = cipherText.Replace(" ", "+");
+            byte[] cipherBytes = Convert.FromBase64String(cipherText);
+            using (System.Security.Cryptography.Aes encryptor = System.Security.Cryptography.Aes.Create())
+            {
+                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                encryptor.Key = pdb.GetBytes(32);
+                encryptor.IV = pdb.GetBytes(16);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(cipherBytes, 0, cipherBytes.Length);
+                        cs.Close();
+                    }
+                    cipherText = Encoding.Unicode.GetString(ms.ToArray());
+                }
+            }
+            return cipherText;
         }
 
-        public string EncryptData(int userId)
+        public string Encrypt(string clearText, string key) // Key = User Password Salt + User DateTimeCreated + Secret Key
         {
-            throw new NotImplementedException();
+            byte[] clearBytes = Encoding.Unicode.GetBytes(clearText);
+            using (System.Security.Cryptography.Aes encryptor = System.Security.Cryptography.Aes.Create())
+            {
+                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                encryptor.Key = pdb.GetBytes(32);
+                encryptor.IV = pdb.GetBytes(16);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(clearBytes, 0, clearBytes.Length);
+                        cs.Close();
+                    }
+                    clearText = Convert.ToBase64String(ms.ToArray());
+                }
+            }
+            return clearText;
         }
 
         public Manager Delete(int id)

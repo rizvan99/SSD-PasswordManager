@@ -20,7 +20,9 @@ namespace PasswordManager.Infrastructure.Repos
 
         public Manager Create(Manager entity)
         {
-            throw new NotImplementedException();
+            var addedManager = _ctx.Managers.Add(entity);
+            _ctx.SaveChanges();
+            return addedManager.Entity;
         }
 
         public Manager Delete(int id)
