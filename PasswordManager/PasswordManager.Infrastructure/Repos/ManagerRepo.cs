@@ -1,4 +1,5 @@
-﻿using PasswordManager.Entities.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using PasswordManager.Entities.Domain;
 using PasswordManager.Infrastructure.Context;
 using PasswordManager.Infrastructure.Interfaces;
 using System;
@@ -35,9 +36,9 @@ namespace PasswordManager.Infrastructure.Repos
             throw new NotImplementedException();
         }
 
-        public List<Manager> GetAll()
+        public List<Manager> GetAll(int userId)
         {
-            throw new NotImplementedException();
+            return _ctx.Managers.Where(x => x.UserId == userId).ToList();
         }
 
         public Manager Update(Manager entity)

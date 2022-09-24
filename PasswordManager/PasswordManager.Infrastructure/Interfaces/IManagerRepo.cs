@@ -13,6 +13,6 @@ namespace PasswordManager.Infrastructure.Interfaces
         public Manager Update(Manager entity);
         public Manager Delete(int id);
         public Manager Get(int id);
-        public List<Manager> GetAll();
+        public List<Manager> GetAll(int userId);
     }
 }

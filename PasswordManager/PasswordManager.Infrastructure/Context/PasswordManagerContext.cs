@@ -18,6 +18,5 @@ namespace PasswordManager.Infrastructure.Context
 
         public DbSet<Manager> Managers { get; set; }
 
-
     }
 }

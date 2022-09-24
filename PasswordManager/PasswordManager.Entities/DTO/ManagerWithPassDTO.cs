@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace PasswordManager.Entities.DTO
 {
-    public class UserDTO
+    public class ManagerWithPassDTO
     {
-        public int Id { get; set; }
-        public string Username { get; set; }
+        public int UserId { get; set; }
+        public string Service { get; set; }
+        public string Password { get; set; }
     }
 }

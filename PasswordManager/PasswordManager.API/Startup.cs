@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using PasswordManager.Core.Implementation;
 using PasswordManager.Core.Interfaces;
 using PasswordManager.Infrastructure.Context;
@@ -62,9 +63,18 @@ namespace PasswordManager.API
             services.AddScoped<IManagerService, ManagerService>();
             services.AddScoped<IManagerRepo, ManagerRepo>();
 
+            System.Security.Cryptography.Aes aes = System.Security.Cryptography.Aes.Create();
+            aes.GenerateKey();
+            var key = Convert.ToBase64String(aes.Key);
+            services.AddSingleton<IEncryptionService>(new EncryptionService(key));
+
             services.AddSingleton<ILoginService>(new LoginService(secretBytes));
 
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson(
+                  options => {
+                      options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                  });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

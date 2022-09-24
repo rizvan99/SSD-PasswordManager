@@ -33,33 +33,53 @@ namespace PasswordManager.API.Controllers
                 {
                     return Unauthorized();
                 }
-                var gen = new PasswordGenerator()
-                {
-                    Length = 12,
-                    MinDigits = 3,
-                    MinUppercases = 1,
-                    MinLowercases = 1,
-                    MinSpecials = 1,
-                };
 
                 var newManager = new Manager()
                 {
                     UserId = int.Parse(userId),
                     Service = dto.Service,
-                    Password = gen.Generate(), // handle at service?
                 };
 
                 var res = _managerService.Create(newManager);
 
-                return Ok(res);
+                return Ok($"Created password manager for {dto.Service}!");
             }
-            catch(Exception e)
+            catch(Exception ex)
             {
-                return BadRequest(e.Message);
+                return BadRequest("Something went wrong");
             }
         }
 
-        // Todo: make GET methods to retrieve managers -> get encrypted data from database -> make service decrypt
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetManagersForLoggedInUser()
+        {
+            try
+            {
+                var userId = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Sid)).Value;
+
+                if (userId == null)
+                {
+                    return Unauthorized();
+                }
+
+                int id = int.Parse(userId);
+
+                var res = _managerService.GetAllForUser(id)
+                    .Select(x => new ManagerWithPassDTO()
+                    {
+                        UserId = x.UserId,
+                        Service = x.Service,
+                        Password = x.Password,
+                    });
+
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Something went wrong");
+            }
+        }
 
     }
 }

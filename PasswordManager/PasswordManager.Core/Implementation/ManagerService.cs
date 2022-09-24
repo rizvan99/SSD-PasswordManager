@@ -18,26 +18,28 @@ namespace PasswordManager.Core.Implementation
 
         private readonly IManagerRepo _managerRepo;
         private readonly IUserService _userService;
-        private readonly string _secretKey;
+        private readonly IEncryptionService _encryptionService;
 
-        public ManagerService(IManagerRepo managerRepo, IUserService userService)
+        public ManagerService(IManagerRepo managerRepo, IUserService userService, IEncryptionService encryptionService)
         {
             _managerRepo = managerRepo;
             _userService = userService;
-            _secretKey = CreateTempServerSideKey();
+            _encryptionService = encryptionService;
         }
 
-        private string CreateTempServerSideKey()
-        {
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-            return rsa.ToXmlString(true);
-        }
+        //private string CreateTempServerSideKey()
+        //{
+        //    System.Security.Cryptography.Aes aes = System.Security.Cryptography.Aes.Create();
+        //    aes.GenerateKey();
+        //    var key = Convert.ToBase64String(aes.Key);
+        //    return key;
+        //}
 
         public string GetEncryptionKeyString(int userId)
         {
             var user = _userService.Get(userId);
             var date = user.DateTimeCreated.ToString();
-            var secret = _secretKey;
+            var secret = _encryptionService.GetSecret();
             return secret + date;
         }
 
@@ -45,56 +47,14 @@ namespace PasswordManager.Core.Implementation
         public Manager Create(Manager entity)
         {
             var key = GetEncryptionKeyString(entity.UserId);
+            var newSecurePass = GenerateStrongPassword();
             var managerToCreate = new Manager()
             {
-                Password = Encrypt(entity.Password, key),
-                Service = Encrypt(entity.Service, key),
+                Password = _encryptionService.Encrypt(newSecurePass, key),
+                Service = _encryptionService.Encrypt(entity.Service, key),
                 UserId = entity.UserId,
             };
             return _managerRepo.Create(managerToCreate);
-        }
-
-        public static string Decrypt(string cipherText, string key) // Key = User Password Salt + User DateTimeCreated + Secret Key
-        {
-            cipherText = cipherText.Replace(" ", "+");
-            byte[] cipherBytes = Convert.FromBase64String(cipherText);
-            using (System.Security.Cryptography.Aes encryptor = System.Security.Cryptography.Aes.Create())
-            {
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
-                encryptor.Key = pdb.GetBytes(32);
-                encryptor.IV = pdb.GetBytes(16);
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(cipherBytes, 0, cipherBytes.Length);
-                        cs.Close();
-                    }
-                    cipherText = Encoding.Unicode.GetString(ms.ToArray());
-                }
-            }
-            return cipherText;
-        }
-
-        public string Encrypt(string clearText, string key) // Key = User Password Salt + User DateTimeCreated + Secret Key
-        {
-            byte[] clearBytes = Encoding.Unicode.GetBytes(clearText);
-            using (System.Security.Cryptography.Aes encryptor = System.Security.Cryptography.Aes.Create())
-            {
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
-                encryptor.Key = pdb.GetBytes(32);
-                encryptor.IV = pdb.GetBytes(16);
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(clearBytes, 0, clearBytes.Length);
-                        cs.Close();
-                    }
-                    clearText = Convert.ToBase64String(ms.ToArray());
-                }
-            }
-            return clearText;
         }
 
         public Manager Delete(int id)
@@ -110,7 +70,7 @@ namespace PasswordManager.Core.Implementation
                 MinDigits = 3,
                 MinUppercases = 1,
                 MinLowercases = 1,
-                MinSpecials = 1,
+                MinSpecials = 0,
             };
 
             return gen.Generate();
@@ -123,9 +83,16 @@ namespace PasswordManager.Core.Implementation
         }
 
         // Todo: decrypt before returning
-        public List<Manager> GetAll()
+        public List<Manager> GetAllForUser(int userId)
         {
-            throw new NotImplementedException();
+            var managers = _managerRepo.GetAll(userId);
+            var key = GetEncryptionKeyString(userId);
+            foreach (var manager in managers)
+            {
+                manager.Service = _encryptionService.Decrypt(manager.Service, key);
+                manager.Password = _encryptionService.Decrypt(manager.Password, key);
+            }
+            return managers;
         }
 
         public Manager Update(Manager entity)
