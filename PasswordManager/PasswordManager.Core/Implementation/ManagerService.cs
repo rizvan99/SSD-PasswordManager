@@ -68,9 +68,9 @@ namespace PasswordManager.Core.Implementation
             {
                 Length = 12,
                 MinDigits = 3,
-                MinUppercases = 1,
-                MinLowercases = 1,
-                MinSpecials = 0,
+                MinUppercases = 2,
+                MinLowercases = 2,
+                MinSpecials = 2,
             };
 
             return gen.Generate();

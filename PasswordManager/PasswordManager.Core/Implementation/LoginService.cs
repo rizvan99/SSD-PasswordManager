@@ -41,10 +41,10 @@ namespace PasswordManager.Core.Implementation
                     SecurityAlgorithms.HmacSha256)
                 ),
                 new JwtPayload(null,    // issuer - not needed (ValidateIssuer = false)
-                    null, // audience - not needed (ValidateAudience = false)
+                    null,                     // audience - not needed (ValidateAudience = false)
                     claims.ToArray(),
-                    DateTime.Now,              // notBefore
-                    DateTime.Now.AddMinutes(60 * 24 * 7) // expires
+                    DateTime.Now,                           // notBefore
+                    DateTime.Now.AddMinutes(60 * 24 * 7)    // expires
                 )
             );
 
